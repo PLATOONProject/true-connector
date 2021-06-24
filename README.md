@@ -1,22 +1,21 @@
 # TRUE CONNECTOR
 **TRUE** (**TRU**sted **E**ngineering) **Connector** for the IDS (International Data Space) ecosystem
 
-The TRUE Connector is composed of three components:
+The TRUE Connector is composed of two components:
 
 * [Execution Core Container (ECC)](https://github.com/Engineering-Research-and-Development/market4.0-execution_core_container_business_logic), open-source project designed by ENG. It is in charge of the data exchange through the IDS ecosystem representing data using the IDS Information Model and interacting with an external Identity Provider. It is also able to communicate with an IDS Broker for registering and querying information.
 * [Back-End (BE) Data Application](https://github.com/Engineering-Research-and-Development/market4.0-data_app_test_BE), open-source project designed by ENG. It represents a trivial data application for generating and consuming data on top of the ECC component.
-* [Usage-Control (UC) Data Application](https://github.com/Engineering-Research-and-Development/market4.0-uc_data_app), a customized version of the Fraunhofer IESE base application for integrating the MyData Framework (a Usage Control Framework designed and implemented by Fraunhofer IESE) in a connector.
 
 ![TRUE Connector Architecture](doc/TRUE_Connector_Architecture.png?raw=true "TRUE Connector Architecture")
 
-## How to Configurate and Run
+## How to Configure and Run
 
 The configuration should be performed customizing the following variables in the **.env** file:
 
-* **DATA_APP_ENDPOINT=192.168.56.1:8084/data** DataAPP endpoint for receiveing data (F endpoint in the above picture)
+* **DATA_APP_ENDPOINT=192.168.56.1:8084/data** DataAPP endpoint for receiving data (F endpoint in the above picture)
 * **MULTIPART_EDGE=mixed** DataAPP A-endpoint Content Type (choose *mixed* for Multipart/mixed or *form* for Multipart/form-data or *http-header* for Multipart/http-header) 
 * **MULTIPART_ECC=mixed** Execution Core Container B-endpoint Content Type (choose *mixed* for Multipart/mixed or *form* for Multipart/form-data or *http-header* for Multipart/http-header) 
-* Edit external ports if need (default values: **8086** for **WS over HTTPS**, **8090** for **http**, **8889** for **B endpoint**, **29292** for **IDSCP2**)
+* Edit external ports if needed (default values: **8086** for **WS over HTTPS**, **8090** for **http**, **8889** for **B endpoint**, **29292** for **IDSCP2**)
 * Forward-To protocol validation can be changed by editing **application.validateProtocol**. Default value is *true* and Forward-To URL must be set like http(https,wss)://example.com, if you choose *false* Forward-To URL can be set like http(https,wss)://example.com or just example.com and the protocol chosen (from application.properties)will be automatically set (it will be overwritten! example: http://example.com will be wss://example if you chose wss in the properties).
 * For websocket configuration, in DataApp resource folders, configure *config.properties* file, set following fields
 
@@ -37,43 +36,40 @@ The TRUE Connector is able to interact with the following Identity Providers:
 
 The *application.dapsUrl* (in the *resources/application-docker.properties*) property must be set properly in order to address the right DAPS server.
 
-Finally, run the application:
+### Finally, run the application:
 
-*  Execute `docker-compose up &`
+  Execute `docker-compose up` (Docker must be installed).
+
+**Note.** See [Docker Installation section](doc/docker-installation.md) for further details.
 
 ## Endpoints
 The TRUE Connector will use two protocols (http and https) as described by the Docker Compose File.
 It will expose the following endpoints:
 
-```
-/proxy 
-```
-to receive data incomming request, and based on received request, forward request to Execution Core Connector (the P endpoint in the above picture)
+* `/proxy`
+to receive data incoming request, and based on received request, forward request to Execution Core Connector (the P endpoint in the above picture)
 
-``` 
-/data 
-```
+* `/data`
 to receive data (IDS Message) from a sender connector (the B endpoint in the above picture)
 Furthermore, just for testing it will expose (http and https):
 
-```
-/about/version 
-```
-returns business logic version 
+* `/about/version`
+   returns business logic version 
 
 ## Configuration
 The ECC supports three different way to exchange data:
 
-*  **REST endpoints** enabled if *WS_EDGE=false* and *WS_ECC=false*
-*  **IDSCP2** enabled if *IDSCP2=true* and WS_ECC = false </br>For *WS_EDGE=true* (use websocket on the edge, false for REST on the edge) 
-*  **Web Socket over HTTPS** enabled if *WS_EDGE=true* and *WS_ECC=true* and *IDSCP2=false* for configuration which uses web socket on the edge and between connectors.
+*  **REST endpoints** enabled if `WS_EDGE=false` and `WS_ECC=false`
+*  **IDSCP2** enabled if `IDSCP2=true` and `WS_ECC = false`
+ For `WS_EDGE=true` (use websocket on the edge, false for REST on the edge) 
+*  **Web Socket over HTTPS** enabled if `WS_EDGE=true` and `WS_ECC=true` and `IDSCP2=false` for configuration which uses web socket on the edge and between connectors.
 
 For trusted data exchange define in *.env* the SSL settings:
 
-*  KEYSTORE-NAME=changeit(JKS format)
-*  KEY-PASSWORD=changeit
-*  KEYSTORE-PASSWORD=changeit
-*  ALIAS=changeit
+*  **KEYSTORE-NAME**=changeit (JKS format file, you can use the self-signed keystore in  `ecc_certs/ssl-server.jk`s for test purposes )
+*  **KEY-PASSWORD**=changeit
+*  **KEYSTORE-PASSWORD**=changeit
+*  **ALIAS**=changeit
 
 ## How to Test
 The reachability could be verified using the following endpoints:
@@ -317,13 +313,6 @@ SELECT ?connectorUri WHERE { ?connectorUri a ids:BaseConnector . } '
 
 { At the moment, broker supports only multipart/mixed requests, this means that connector will have to be configured to mulitpar/mixed configuration. }
 
-## Usage Control
-The TRUE Connector integrates the [Fraunhofer MyData Framework](https://www.mydata-control.de/) for implementing the Usage Control. Details about the PMP and PEP components can be found [here](doc/USAGE_CONTROL_RULES.md). 
-
-## Contract Negotiation - simple flow
-
-For simple contract negotiation flow, with ContractAgreement read from file, please check following link
-[Data App Contract Negotiation](https://github.com/Engineering-Research-and-Development/market4.0-data_app_test_BE/blob/master/README.md#markdown-header-Contract-Negotiation-simple-flow) 
 
 
 ## License
@@ -331,5 +320,4 @@ The TRUE Connector components are released following different licenses:
 
 * **Execution Core Container**, open-source distributed under the license AGPLv3
 * **BE Data APP**, open-source distributed under the license AGPLv3
-* **UC Data APP**, TBC
 
